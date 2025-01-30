@@ -1,0 +1,5 @@
+torch==1.13.1
+matplotlib==3.5.1
+scikit-learn==1.0.2
+numpy==1.21.6
+spectral==0.24.1

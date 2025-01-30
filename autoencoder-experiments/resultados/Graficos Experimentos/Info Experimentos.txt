@@ -1,0 +1,36 @@
+Experimentos con 20 epocas, 32 imagenes, 70% entrenamiento:
+
+- python main.py --batch_size 3 --optimizer adam --learning_rate 1e-4 --criterion mse
+exp1 217 segundos
+
+- python main.py --batch_size 3 --optimizer sgd --learning_rate 1e-4 --criterion mse
+exp2  210 segundos 
+
+-python main.py --batch_size 3 --optimizer adam --learning_rate 1e-4 --criterion mae
+exp3 227 segundos
+
+- python main.py --batch_size 5 --optimizer adam --learning_rate 1e-4 --criterion mse
+exp4 440 segundos
+
+-python main.py --batch_size 5 --optimizer adam --learning_rate 1e-4 --criterion mae
+exp5 404 segundos
+
+-python main.py --batch_size 3 --optimizer adam --learning_rate 1e-3 --criterion mse
+exp6 202 segundos
+
+-python main.py --batch_size 3 --optimizer sgd --learning_rate 1e-3 --criterion mse
+exp7 203 segundos
+
+- python main.py --batch_size 3 --optimizer adam --learning_rate 1e-5 --criterion mse
+exp8 212 segundos
+
+-python main.py --batch_size 3 --optimizer adam --learning_rate 1e-6 --criterion mse
+exp9 204 segundos
+
+Experimentos con 300 epocas, 32 imagenes 70% Entrenamiento
+-python main.py --batch_size 3 --optimizer adam --learning_rate 1e-4 --criterion mse
+exp10 3294 segundos
+
+Experimento con 500 epocas, 64 imagenes 70% Entrenamiento
+-python main.py --batch_size 3 --optimizer adam --learning_rate 1e-4 --criterion mse
+exp500 12861 segundos
