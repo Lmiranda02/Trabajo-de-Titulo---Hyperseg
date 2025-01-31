@@ -41,7 +41,7 @@ def main(img_path, model_path, n_components):
 
     print(f"Dimensiones del espacio latente: {latent_space.shape}")
 
-    # **1️⃣ Visualización Directa del Espacio Latente como Imagen**
+    # **Visualización Directa del Espacio Latente como Imagen**
     latent_rgb = latent_space[:3, :, :].transpose(1, 2, 0)  # Tomamos 3 canales para visualización
     latent_rgb_normalized = (latent_rgb - latent_rgb.min()) / (latent_rgb.max() - latent_rgb.min())
 
@@ -57,7 +57,7 @@ def main(img_path, model_path, n_components):
     plt.tight_layout()
     plt.show()
 
-    # **2️⃣ PCA: Análisis de Varianza**
+    # **PCA: Análisis de Varianza**
     latent_reshaped = latent_space.reshape(latent_space.shape[0], -1).T  # Convertimos a 2D (píxeles x características)
     pca = PCA(n_components=10)  # Reducimos a 10 componentes principales
     latent_pca = pca.fit_transform(latent_reshaped)
@@ -72,7 +72,7 @@ def main(img_path, model_path, n_components):
     plt.grid(True)
     plt.show()
 
-    # **3️⃣ t-SNE: Visualización en 2D del Espacio Latente**
+    # **t-SNE: Visualización en 2D del Espacio Latente**
     tsne = TSNE(n_components=2, perplexity=30, random_state=42)
     latent_tsne = tsne.fit_transform(latent_pca)
 
@@ -84,7 +84,7 @@ def main(img_path, model_path, n_components):
     plt.grid(True)
     plt.show()
 
-    # **4️⃣ Clustering en el Espacio Latente**
+    # **Clustering en el Espacio Latente**
     n_clusters = int(input("Ingrese el número de clusters a usar para K-Means: "))
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
     cluster_labels = kmeans.fit_predict(latent_pca)

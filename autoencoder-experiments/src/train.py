@@ -6,34 +6,6 @@ import numpy as np
 import time
 import torch
 import torch.nn as nn
-import torchvision.models as models
-
-class PerceptualLoss(nn.Module):
-    def __init__(self):
-        super(PerceptualLoss, self).__init__()
-        vgg16 = models.vgg11(pretrained=True).features[:8] 
-        for param in vgg16.parameters():
-            param.requires_grad = False  # Congelamos los pesos
-        self.vgg = vgg16.eval()  # Modo evaluación
-        self.criterion = nn.L1Loss()  # Usamos L1 para la Perceptual Loss
-
-        # ✅ Proyección lineal de 57 canales a 3 canales (para compatibilidad con VGG16)
-        self.projection = nn.Conv2d(57, 3, kernel_size=1)  # 57 → 3 canales con convolución 1x1
-
-    def forward(self, recon, target):
-        # ✅ Normalizar las imágenes en el rango [0,1]
-        recon = torch.clamp(recon, 0, 1)
-        target = torch.clamp(target, 0, 1)
-
-        # ✅ Reducir de 57 canales → 3 canales
-        recon_rgb = self.projection(recon)
-        target_rgb = self.projection(target)
-
-        # ✅ Extraemos características de la imagen reconstruida y la imagen real
-        recon_features = self.vgg(recon_rgb)
-        target_features = self.vgg(target_rgb)
-
-        return self.criterion(recon_features, target_features) 
 
 def visualize_reconstructions(dataloader, model, device, n_samples=10, images_per_page=10):
     model.eval()
@@ -115,8 +87,6 @@ def train_autoencoder(train_dataloader, val_dataloader, autoencoder, optimizer, 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     autoencoder.to(device)
 
-    perceptual_criterion = PerceptualLoss().to(device)  # ✅ Instanciar Perceptual Loss
-
     loss_history = []
     val_loss_history = []
     nmse_train_history = []
@@ -129,17 +99,15 @@ def train_autoencoder(train_dataloader, val_dataloader, autoencoder, optimizer, 
         total_loss = 0
         total_nmse_train = 0
 
-        for step, data in enumerate(train_dataloader):
+        for data in train_dataloader:
             data = data.to(device)
             optimizer.zero_grad()
 
             # Forward pass
             recon_data, _ = autoencoder(data)
 
-            # ✅ Nueva función de pérdida combinada
-            mse_loss = criterion(recon_data, data, step)  # Ahora la función recibe `step`
-            perceptual_loss = perceptual_criterion(recon_data, data) if step % 5 == 0 else 0  # ✅ Aplicar Perceptual Loss cada 5 iteraciones
-            loss = mse_loss + 0.1 * perceptual_loss  # 🔥 Combinación de pérdidas (ponderación de Perceptual Loss)
+            # Usar la función de pérdida seleccionada (MSE o MAE)
+            loss = criterion(recon_data, data)
 
             # Backward pass
             loss.backward()
@@ -155,7 +123,7 @@ def train_autoencoder(train_dataloader, val_dataloader, autoencoder, optimizer, 
         loss_history.append(avg_loss)
         nmse_train_history.append(avg_nmse_train)
 
-        # 🔹 Validación
+        # Validación
         autoencoder.eval()
         val_loss = 0
         total_nmse_val = 0
@@ -164,9 +132,7 @@ def train_autoencoder(train_dataloader, val_dataloader, autoencoder, optimizer, 
                 data = data.to(device)
                 recon_data, _ = autoencoder(data)
 
-                mse_loss = criterion(recon_data, data)
-                perceptual_loss = perceptual_criterion(recon_data, data)
-                loss = mse_loss + 0.1 * perceptual_loss  # ✅ Aplicar misma combinación de pérdida en validación
+                loss = criterion(recon_data, data)
 
                 val_loss += loss.item()
 
