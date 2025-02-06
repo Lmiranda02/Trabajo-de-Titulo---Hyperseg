@@ -102,7 +102,7 @@ def main(img_path, n_components):
         cluster_mask = (cluster_labels == cluster_id)
         cluster_image = cluster_mask.reshape(num_rows_img1, num_cols_img1).T
         axes[cluster_id].imshow(cluster_image, cmap='gray')
-        axes[cluster_id].set_title(f'Cluster {cluster_id + 1}')
+        axes[cluster_id].set_title(f'Cluster {cluster_id}')
         axes[cluster_id].axis('off')
     plt.tight_layout()
     plt.show()

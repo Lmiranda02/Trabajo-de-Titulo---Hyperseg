@@ -1,0 +1,5 @@
+{
+    "image_dir": "C:/Users/Marco/Desktop/Universidad Luis/Trabajo de Titulo/Imagenes Hiperespectrales/dataset_final_brillo",
+    "model_save_path": "C:/Users/Marco/Desktop/Universidad Luis/Trabajo de Titulo/Modelos",
+    "num_epochs": 50
+}

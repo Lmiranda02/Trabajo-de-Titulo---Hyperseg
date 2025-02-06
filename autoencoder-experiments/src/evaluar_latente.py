@@ -7,19 +7,33 @@ from sklearn.manifold import TSNE
 from sklearn.cluster import KMeans
 from torch.utils.data import DataLoader
 from Hyperspectral_image import SpectralImage
-from model2 import UNetAutoencoder
 from dataset import HyperSpectralDataset
 import argparse
 
-def main(img_path, model_path, n_components):
+def main(img_path, model_path, model_version, n_components):
     # Configuración del dispositivo
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    # Diccionario para mapear versiones del modelo a sus respectivas clases
+    model_versions = {
+        "v1": "model.UNetAutoencoder",
+        "v2": "model2.UNetAutoencoder",
+        "v3": "model3.UNetAutoencoder",
+    }
+
+    if model_version not in model_versions:
+        raise ValueError("Versión de modelo no válida. Usa 'v1', 'v2' o 'v3'.")
+
+    # Importar la clase del modelo dinámicamente
+    module_name, class_name = model_versions[model_version].rsplit(".", 1)
+    module = __import__(module_name, fromlist=[class_name])
+    ModelClass = getattr(module, class_name)
 
     # Cargar la imagen usando la clase SpectralImage
     img1 = SpectralImage(bilPath=img_path + ".bil", hdrPath=img_path + ".hdr")
 
     # Cargar el modelo de autoencoder
-    autoencoder = UNetAutoencoder(input_channels=n_components).to(device)
+    autoencoder = ModelClass(input_channels=n_components).to(device)
     checkpoint = torch.load(model_path, map_location=device)
     autoencoder.load_state_dict(checkpoint['model_state_dict'])
     autoencoder.eval()
@@ -59,7 +73,7 @@ def main(img_path, model_path, n_components):
 
     # **PCA: Análisis de Varianza**
     latent_reshaped = latent_space.reshape(latent_space.shape[0], -1).T  # Convertimos a 2D (píxeles x características)
-    pca = PCA(n_components=10)  # Reducimos a 10 componentes principales
+    pca = PCA(n_components=10)  
     latent_pca = pca.fit_transform(latent_reshaped)
 
     print(f"Varianza explicada por PCA: {pca.explained_variance_ratio_}")
@@ -89,7 +103,7 @@ def main(img_path, model_path, n_components):
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
     cluster_labels = kmeans.fit_predict(latent_pca)
 
-    clustered_image = cluster_labels.reshape(num_rows_img1, num_cols_img1)
+    clustered_image = cluster_labels.reshape(latent_space.shape[1], latent_space.shape[2])
 
     plt.figure(figsize=(10, 6))
     plt.imshow(clustered_image, cmap='tab10')
@@ -101,7 +115,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Evaluar el espacio latente del autoencoder.')
     parser.add_argument('--img_path', type=str, required=True, help='Ruta de la imagen sin extensión.')
     parser.add_argument('--model_path', type=str, required=True, help='Ruta del modelo de autoencoder preentrenado.')
+    parser.add_argument('--model_version', type=str, required=True, choices=['v1', 'v2', 'v3'], help="Versión del modelo ('v1', 'v2' o 'v3')")
     parser.add_argument('--n_components', type=int, default=57, help='Número de componentes espectrales del autoencoder.')
     args = parser.parse_args()
 
-    main(args.img_path, args.model_path, args.n_components)
+    main(args.img_path, args.model_path, args.model_version, args.n_components)
