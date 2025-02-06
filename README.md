@@ -41,6 +41,24 @@ Trabajo de Titulo - Hyperseg/
    ```
 
 ---
+## Configuración
+
+Antes de ejecutar los scripts, asegúrate de configurar los paths en el archivo `config.json`. Puedes usar el archivo de plantilla `config_template.json` como referencia:
+
+1. Copia el archivo de plantilla:
+    ```sh
+    cp src/config_template.json src/config.json
+    ```
+
+2. Edita el archivo config.json y actualiza los paths según tu entorno local:
+    ```json
+    {
+        "image_dir": "ruta/a/tu/directorio/de/imagenes",
+        "model_save_path": "ruta/a/tu/directorio/de/modelos",
+        "num_epochs": 50
+    }
+    ```
+---
 
 ## 🚀 Uso del Proyecto
 
